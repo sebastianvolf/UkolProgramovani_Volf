@@ -1,7 +1,64 @@
 #include <iostream>
-#include <string>
 using namespace std;
 
-int main(){
+int main() {
+    int hp, maxHP;
+    int mana, maxMana;
+    int attack;
+    int gold = 10;
+    int level = 1;
+    int xp = 0;
+    int vyber;
+    int potvrzeni;
 
+    cout << "----- TEXTOVE RPG -----\n";
+
+    while (true) {
+        cout << "\nVyber si postavu:\n";
+        cout << "1 - Paladin\n";
+        cout << "2 - Mage\n";
+
+        cin >> vyber;
+
+        if (vyber == 1) {
+            maxHP = 12;
+            hp = 12;
+            maxMana = 5;
+            mana = 5;
+            attack = 3;
+
+            cout << "\nPostava: Paladin\n";
+        }
+        else if (vyber == 2) {
+            maxHP = 8;
+            hp = 8;
+            maxMana = 10;
+            mana = 10;
+            attack = 4;
+
+            cout << "\nPostava: Mage\n";
+        }
+        else {
+            cout << "Neplatna volba!\n";
+            continue;
+        }
+
+        cout << "Zivot: " << hp << "/" << maxHP << endl;
+        cout << "Mana: " << mana << "/" << maxMana << endl;
+        cout << "Utok: " << attack << endl;
+        cout << "Level: " << level << endl;
+        cout << "XP: " << xp << endl;
+        cout << "Zlato: " << gold << endl;
+
+        cout << "\nChces tuto postavu? (1 = ano / 0 = ne): ";
+        cin >> potvrzeni;
+
+        if (potvrzeni == 1) {
+            break;
+        }
+    }
+
+    cout << "\nPostava potvrzena!\n";
+
+    return 0;
 }
