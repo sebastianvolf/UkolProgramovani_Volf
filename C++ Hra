@@ -43,7 +43,7 @@ int main() {
             continue;
         }
 
-        cout << "Zivot: " << hp << "/" << maxHP << endl;
+        cout << "Zivoty: " << hp << "/" << maxHP << endl;
         cout << "Mana: " << mana << "/" << maxMana << endl;
         cout << "Utok: " << attack << endl;
         cout << "Level: " << level << endl;
@@ -59,6 +59,47 @@ int main() {
     }
 
     cout << "\nPostava potvrzena!\n";
+
+    int monsterHP = 10;
+    int monsterAttack = 2;
+
+    cout << "\nPred tebou se objevil Goblin!\n";
+
+    while (hp > 0 && monsterHP > 0) {
+
+        cout << "\n----- SOUBOJ -----\n";
+
+        cout << "Tvoje zivoty: " << hp << "/" << maxHP << endl;
+        cout << "Goblinovy zivoty: " << monsterHP << endl;
+
+        cout << "\n1 - Utok\n";
+
+        int fightChoice;
+        cin >> fightChoice;
+
+        if (fightChoice == 1) {
+            monsterHP = monsterHP - attack;
+
+            cout << "\nUderil jsi Goblina za " << attack << " poskozeni!\n";
+        }
+        else {
+            cout << "Neplatna volba!\n";
+            continue;
+        }
+
+        if (monsterHP <= 0) {
+            cout << "\nGoblin byl porazen!\n";
+            break;
+        }
+
+        hp = hp - monsterAttack;
+
+        cout << "Goblin te uderil za " << monsterAttack << " poskozeni!\n";
+
+        if (hp <= 0) {
+            cout << "\nZemrel jsi! Konec hry.\n";
+        }
+    }
 
     return 0;
 }
