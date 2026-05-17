@@ -1,56 +1,125 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
+
 using namespace std;
 
+// FUNKCE PRO NAHODNE CISLO //
+
+int nahodneCislo(int min, int max) {
+
+    return rand() % (max - min + 1) + min;
+}
+
+// FUNKCE PRO VYPIS STATISTIK //
+
+void vypisStaty(int hp, int maxHP, int mana, int maxMana,
+                 int attack, int level, int xp, int gold) {
+
+    cout << "\n----------- STATISTIKY -----------\n";
+
+    cout << "Zivoty: " << hp << "/" << maxHP << endl;
+    cout << "Mana: " << mana << "/" << maxMana << endl;
+    cout << "Utok: " << attack << endl;
+    cout << "Level: " << level << endl;
+    cout << "XP: " << xp << endl;
+    cout << "Zlato: " << gold << endl;
+
+    cout << "----------------------------------\n";
+}
+
+// FUNKCE PRO VYPIS MONSTRA //
+
+void vypisMonstrum(string monsterName) {
+
+    cout << "\n-----------------------------";
+    cout << "\n    OBJEVILO SE MONSTRUM";
+    cout << "\n-----------------------------\n";
+
+    cout << "\nPred tebou se objevil "
+         << monsterName
+         << "!\n";
+}
+
 int main() {
+
+    srand(time(0));
+
+// STATISTIKY HRACE //
+
     int hp, maxHP;
     int mana, maxMana;
     int attack;
+
     int gold = 10;
     int level = 1;
     int xp = 0;
+
     int vyber;
     int potvrzeni;
 
     cout << "----- TEXTOVE RPG -----\n";
 
+// VYBER POSTAVY //
+
     while (true) {
+
         cout << "\nVyber si postavu:\n";
+
         cout << "1 - Paladin\n";
         cout << "2 - Mage\n";
 
+        cout << "\nTvoje volba: ";
         cin >> vyber;
 
+// PALADIN //
+
         if (vyber == 1) {
+
             maxHP = 12;
             hp = 12;
+
             maxMana = 5;
             mana = 5;
+
             attack = 3;
 
             cout << "\nPostava: Paladin\n";
         }
+
+// MAGE //
+
         else if (vyber == 2) {
+
             maxHP = 8;
             hp = 8;
+
             maxMana = 10;
             mana = 10;
+
             attack = 4;
 
             cout << "\nPostava: Mage\n";
         }
+
+// SPATNA VOLBA //
+
         else {
-            cout << "Neplatna volba!\n";
+
+            cout << "\nNeplatna volba!\n";
             continue;
         }
 
-        cout << "Zivoty: " << hp << "/" << maxHP << endl;
-        cout << "Mana: " << mana << "/" << maxMana << endl;
-        cout << "Utok: " << attack << endl;
-        cout << "Level: " << level << endl;
-        cout << "XP: " << xp << endl;
-        cout << "Zlato: " << gold << endl;
+// VYPIS STATISTIK //
 
-        cout << "\nChces tuto postavu? (1 = ano / 0 = ne): ";
+        vypisStaty(hp, maxHP, mana, maxMana,
+                    attack, level, xp, gold);
+
+        cout << "\nChces tuto postavu?\n";
+        cout << "1 = Ano\n";
+        cout << "0 = Ne\n";
+
+        cout << "\nTvoje volba: ";
         cin >> potvrzeni;
 
         if (potvrzeni == 1) {
@@ -58,46 +127,169 @@ int main() {
         }
     }
 
-    cout << "\nPostava potvrzena!\n";
+    cout << "\n-----------------------------";
+    cout << "\n     POSTAVA POTVRZENA";
+    cout << "\n-----------------------------\n";
 
-    int monsterHP = 10;
-    int monsterAttack = 2;
+// NAHODNE MONSTRUM //
 
-    cout << "\nPred tebou se objevil Goblin!\n";
+    int monsterHP;
+    int monsterAttack;
+
+    string monsterName;
+
+    int randomMonster = nahodneCislo(1, 3);
+
+// GOBLIN //
+
+    if (randomMonster == 1) {
+
+        monsterName = "Goblin";
+        monsterHP = 10;
+        monsterAttack = 2;
+    }
+
+// SKELETON //
+
+    else if (randomMonster == 2) {
+
+        monsterName = "Skeleton";
+        monsterHP = 12;
+        monsterAttack = 3;
+    }
+
+// ORC //
+
+    else {
+
+        monsterName = "Orc";
+        monsterHP = 15;
+        monsterAttack = 4;
+    }
+
+// VYPIS MONSTRA //
+
+    vypisMonstrum(monsterName);
+
+// SOUBOJ //
 
     while (hp > 0 && monsterHP > 0) {
 
-        cout << "\n----- SOUBOJ -----\n";
+        cout << "\n-----------------------------";
+        cout << "\n           SOUBOJ";
+        cout << "\n-----------------------------\n";
 
-        cout << "Tvoje zivoty: " << hp << "/" << maxHP << endl;
-        cout << "Goblinovy zivoty: " << monsterHP << endl;
+        cout << "\nTvoje zivoty: "
+             << hp
+             << "/"
+             << maxHP
+             << endl;
+
+        cout << monsterName
+             << " - zivoty: "
+             << monsterHP
+             << endl;
 
         cout << "\n1 - Utok\n";
 
         int fightChoice;
+
+        cout << "\nTvoje volba: ";
         cin >> fightChoice;
 
-        if (fightChoice == 1) {
-            monsterHP = monsterHP - attack;
+// TAH HRACE //
 
-            cout << "\nUderil jsi Goblina za " << attack << " poskozeni!\n";
+        if (fightChoice == 1) {
+
+            int damage = nahodneCislo(1, attack);
+
+            monsterHP = monsterHP - damage;
+
+            cout << "\nUderil jsi "
+                 << monsterName
+                 << " za "
+                 << damage
+                 << " poskozeni!\n";
         }
+
+// SPATNA VOLBA //
+
         else {
-            cout << "Neplatna volba!\n";
+
+            cout << "\nNeplatna volba!\n";
             continue;
         }
 
+// SMRT MONSTRA //
+
         if (monsterHP <= 0) {
-            cout << "\nGoblin byl porazen!\n";
+
+            cout << "\n-----------------------------";
+            cout << "\n      MONSTRUM PORAZENO";
+            cout << "\n-----------------------------\n";
+
+            cout << "\n"
+                 << monsterName
+                 << " byl porazen!\n";
+
+// XP ODMENA //
+
+            xp = xp + 10;
+
+            cout << "\nZiskal jsi 10 XP!\n";
+
+// ZLATO ODMENA //
+
+            int randomGold = nahodneCislo(0, 1);
+
+            if (randomGold == 1) {
+
+                int foundGold = nahodneCislo(1, 10);
+
+                gold = gold + foundGold;
+
+                cout << "Nasel jsi "
+                     << foundGold
+                     << " zlata!\n";
+            }
+
+            else {
+
+                cout << "Monstrum u sebe nemelo zadne zlato.\n";
+            }
+
+// VYPIS ODMEN //
+
+            cout << "\nAktualni XP: "
+                 << xp
+                 << endl;
+
+            cout << "Aktualni zlato: "
+                 << gold
+                 << endl;
+
             break;
         }
 
+// TAH MONSTRA //
+
         hp = hp - monsterAttack;
 
-        cout << "Goblin te uderil za " << monsterAttack << " poskozeni!\n";
+        cout << "\n"
+             << monsterName
+             << " te uderil za "
+             << monsterAttack
+             << " poskozeni!\n";
+
+// SMRT HRACE //
 
         if (hp <= 0) {
-            cout << "\nZemrel jsi! Konec hry.\n";
+
+            cout << "\n-----------------------------";
+            cout << "\n          KONEC HRY";
+            cout << "\n-----------------------------\n";
+
+            cout << "\nZemrel jsi!\n";
         }
     }
 
