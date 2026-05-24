@@ -58,6 +58,8 @@ int main() {
     int vyber;
     int potvrzeni;
 
+    string className;
+
     cout << "----- TEXTOVE RPG -----\n";
 
 // VYBER POSTAVY //
@@ -76,13 +78,15 @@ int main() {
 
         if (vyber == 1) {
 
-            maxHP = 12;
-            hp = 12;
+            className = "Paladin";
+
+            maxHP = 15;
+            hp = 15;
 
             maxMana = 5;
             mana = 5;
 
-            attack = 3;
+            attack = 4;
 
             cout << "\nPostava: Paladin\n";
         }
@@ -91,13 +95,15 @@ int main() {
 
         else if (vyber == 2) {
 
-            maxHP = 8;
-            hp = 8;
+            className = "Mage";
+
+            maxHP = 10;
+            hp = 10;
 
             maxMana = 10;
             mana = 10;
 
-            attack = 4;
+            attack = 5;
 
             cout << "\nPostava: Mage\n";
         }
@@ -138,9 +144,7 @@ int main() {
 
     string monsterName;
 
-    int randomMonster = nahodneCislo(1, 3);
-
-// GOBLIN //
+    int randomMonster = nahodneCislo(1, 7);
 
     if (randomMonster == 1) {
 
@@ -149,8 +153,6 @@ int main() {
         monsterAttack = 2;
     }
 
-// SKELETON //
-
     else if (randomMonster == 2) {
 
         monsterName = "Skeleton";
@@ -158,13 +160,41 @@ int main() {
         monsterAttack = 3;
     }
 
-// ORC //
-
-    else {
+    else if (randomMonster == 3) {
 
         monsterName = "Orc";
         monsterHP = 15;
         monsterAttack = 4;
+    }
+
+    else if (randomMonster == 4) {
+
+        monsterName = "Zombie";
+        monsterHP = 14;
+        monsterAttack = 3;
+    }
+
+    else if (randomMonster == 5) {
+
+        monsterName = "Spider";
+        monsterHP = 8;
+        monsterAttack = 5;
+    }
+
+    else if (randomMonster == 6) {
+
+        monsterName = "Wolf";
+        monsterHP = 11;
+        monsterAttack = 4;
+    }
+
+// MINI BOSS //
+
+    else {
+
+        monsterName = "Dark Knight";
+        monsterHP = 25;
+        monsterAttack = 6;
     }
 
 // VYPIS MONSTRA //
@@ -185,19 +215,27 @@ int main() {
              << maxHP
              << endl;
 
+        cout << "Tvoje mana: "
+             << mana
+             << "/"
+             << maxMana
+             << endl;
+
         cout << monsterName
              << " - zivoty: "
              << monsterHP
              << endl;
 
         cout << "\n1 - Utok\n";
+        cout << "2 - Leceni\n";
+        cout << "3 - Specialni schopnost\n";
 
         int fightChoice;
 
         cout << "\nTvoje volba: ";
         cin >> fightChoice;
 
-// TAH HRACE //
+// NORMALNI UTOK //
 
         if (fightChoice == 1) {
 
@@ -210,6 +248,72 @@ int main() {
                  << " za "
                  << damage
                  << " poskozeni!\n";
+        }
+
+// LECENI //
+
+        else if (fightChoice == 2) {
+
+            if (mana >= 2) {
+
+                hp = hp + 4;
+
+                if (hp > maxHP) {
+                    hp = maxHP;
+                }
+
+                mana = mana - 2;
+
+                cout << "\nVylecil ses o 4 zivoty!\n";
+            }
+
+            else {
+
+                cout << "\nNemas dost many!\n";
+                continue;
+            }
+        }
+
+// SPECIALNI SCHOPNOST //
+
+        else if (fightChoice == 3) {
+
+            if (mana >= 3) {
+
+                int specialDamage;
+
+// PALADIN ABILITY //
+
+                if (className == "Paladin") {
+
+                    specialDamage = nahodneCislo(5, 8);
+
+                    cout << "\nPouzil jsi Svaty uder!\n";
+                }
+
+// MAGE ABILITY //
+
+                else {
+
+                    specialDamage = nahodneCislo(6, 10);
+
+                    cout << "\nPouzil jsi Fireball!\n";
+                }
+
+                mana = mana - 3;
+
+                monsterHP = monsterHP - specialDamage;
+
+                cout << "Zpusobil jsi "
+                     << specialDamage
+                     << " poskozeni!\n";
+            }
+
+            else {
+
+                cout << "\nNemas dost many!\n";
+                continue;
+            }
         }
 
 // SPATNA VOLBA //
@@ -234,28 +338,57 @@ int main() {
 
 // XP ODMENA //
 
-            xp = xp + 10;
+            if (monsterName == "Dark Knight") {
 
-            cout << "\nZiskal jsi 10 XP!\n";
+                xp = xp + 25;
 
-// ZLATO ODMENA //
-
-            int randomGold = nahodneCislo(0, 1);
-
-            if (randomGold == 1) {
-
-                int foundGold = nahodneCislo(1, 10);
-
-                gold = gold + foundGold;
-
-                cout << "Nasel jsi "
-                     << foundGold
-                     << " zlata!\n";
+                cout << "\nZiskal jsi 25 XP!\n";
             }
 
             else {
 
-                cout << "Monstrum u sebe nemelo zadne zlato.\n";
+                xp = xp + 10;
+
+                cout << "\nZiskal jsi 10 XP!\n";
+            }
+
+// ZLATO ODMENA //
+
+            int foundGold;
+
+            if (monsterName == "Dark Knight") {
+
+                foundGold = nahodneCislo(10, 20);
+            }
+
+            else {
+
+                foundGold = nahodneCislo(1, 10);
+            }
+
+            gold = gold + foundGold;
+
+            cout << "Nasel jsi "
+                 << foundGold
+                 << " zlata!\n";
+
+// LEVEL SYSTEM //
+
+            if (xp >= 20) {
+
+                level = 2;
+
+                maxHP = maxHP + 5;
+                hp = maxHP;
+
+                attack = attack + 2;
+
+                cout << "\n-----------------------------";
+                cout << "\n         LEVEL UP";
+                cout << "\n-----------------------------\n";
+
+                cout << "\Dosahl jsi 2 levelu!\n";
+                cout << "Ziskal jsi vice zivotu a utoku!\n";
             }
 
 // VYPIS ODMEN //
