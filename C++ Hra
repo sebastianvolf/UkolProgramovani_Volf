@@ -1,130 +1,463 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <string>
+#include <vector>
 
 using namespace std;
 
-// FUNKCE PRO NAHODNE CISLO //
-
 int nahodneCislo(int min, int max) {
-
     return rand() % (max - min + 1) + min;
 }
 
-// FUNKCE PRO VYPIS STATISTIK //
-
-void vypisStaty(int hp, int maxHP, int mana, int maxMana,
-                 int attack, int level, int xp, int gold) {
-
-    cout << "\n----------- STATISTIKY -----------\n";
-
-    cout << "Zivoty: " << hp << "/" << maxHP << endl;
-    cout << "Mana: " << mana << "/" << maxMana << endl;
-    cout << "Utok: " << attack << endl;
-    cout << "Level: " << level << endl;
-    cout << "XP: " << xp << endl;
-    cout << "Zlato: " << gold << endl;
-
-    cout << "----------------------------------\n";
+void pauza() {
+    cout << "\n[Stiskni Enter pro pokracovani...]";
+    cin.ignore();
+    cin.get();
 }
 
-// FUNKCE PRO VYPIS MONSTRA //
+void vykresliCaru() {
+    cout << "--------------------------------------------------\n";
+}
 
-void vypisMonstrum(string monsterName) {
+struct Monstrum {
+    string jmeno;
+    int hp;
+    int maxHP;
+    int utok;
+    bool jeMiniBoss;
+    bool jeHlavniBoss;
+    int chronarchPouziti = 0;
+};
 
-    cout << "\n-----------------------------";
-    cout << "\n    OBJEVILO SE MONSTRUM";
-    cout << "\n-----------------------------\n";
+// STATISTIKY //
+void vypisStaty(int hp, int maxHP, int mana, int maxMana,
+                int attack, int level, int xp, int gold, string className) {
+    cout << "\n=========== STATISTIKY POSTAVY (" << className << ") ===========\n";
+    cout << "  Zivoty: " << hp << "/" << maxHP << endl;
+    cout << "  Mana/Odhodlani: " << mana << "/" << maxMana << endl;
+    cout << "  Utok:   " << attack << endl;
+    cout << "  Level:  " << level << "  |  XP: " << xp << "/20" << endl;
+    cout << "  Zlato:  " << gold << endl;
+    cout << "======================================================\n";
+}
 
-    cout << "\nPred tebou se objevil "
-         << monsterName
-         << "!\n";
+// GENERACE MONSTER //
+Monstrum generujBezneMonstrum() {
+    string jmena[16] = {
+        "Goblin", "Skeleton", "Orc", "Zombie", "Spider", "Wolf",
+        "Zakerna sousedka", "Skret", "Netopyr", "Had", "Slime", "Krysodlak",
+        "Bandita", "Duch", "Revizor", "Policista"
+    };
+
+    int index = nahodneCislo(0, 15);
+    Monstrum m;
+    m.jmeno = jmena[index];
+    m.maxHP = nahodneCislo(8, 13);
+    m.hp = m.maxHP;
+    m.utok = nahodneCislo(2, 4);
+    m.jeMiniBoss = false;
+    m.jeHlavniBoss = false;
+    return m;
+}
+
+// FUNKCE PRO VESNICI //
+void navstivVesnici(int &hp, int &maxHP, int &mana, int &maxMana, int &attack, int &gold, string nazevVesnice) {
+    int volba;
+    while (true) {
+        vykresliCaru();
+        cout << "         PRAVE JSI VSTOUPIL DO VESNICE: " << nazevVesnice << "\n";
+        vykresliCaru();
+        cout << "Zlato: " << gold << " | Zivoty: " << hp << "/" << maxHP << " | Mana: " << mana << "/" << maxMana << "\n";
+        cout << "\nCo zde chces podniknout?\n";
+        cout << "1 - Odpocinout si a doplnit zivoty i manu na max (Stoji 5 zlata)\n";
+        cout << "2 - Trvale zvysit maximalni zivoty +3 (Stoji 10 zlata)\n";
+        cout << "3 - Trvale zvysit maximalni manu +2 (Stoji 10 zlata)\n";
+        cout << "4 - Nabrousit zbran/klacek a zvysit utok +2 (Stoji 15 zlata)\n";
+        cout << "5 - Odejit z vesnice a pokracovat v ceste\n";
+        cout << "\nTvoje volba: ";
+        cin >> volba;
+
+        bool uspesnyNakup = false;
+
+        if (volba == 1) {
+            if (gold >= 5) {
+                hp = maxHP;
+                mana = maxMana;
+                gold -= 5;
+                cout << "\n[!] Vse bylo plne obnoveno.\n";
+                uspesnyNakup = true;
+            } else {
+                cout << "\n[!] Nemas dostatek zlata!\n";
+            }
+        }
+        else if (volba == 2) {
+            if (gold >= 10) {
+                maxHP += 3;
+                hp += 3;
+                gold -= 10;
+                cout << "\n[!] Maximalni zivoty se zvysily.\n";
+                uspesnyNakup = true;
+            } else {
+                cout << "\n[!] Nemas dostatek zlata!\n";
+            }
+        }
+        else if (volba == 3) {
+            if (gold >= 10) {
+                maxMana += 2;
+                mana += 2;
+                gold -= 10;
+                cout << "\n[!] Maximalni kapacita se zvysila.\n";
+                uspesnyNakup = true;
+            } else {
+                cout << "\n[!] Nemas dostatek zlata!\n";
+            }
+        }
+        else if (volba == 4) {
+            if (gold >= 15) {
+                attack += 2;
+                gold -= 15;
+                cout << "\n[!] Tvuj zakladni utok trvale vzrostl.\n";
+                uspesnyNakup = true;
+            } else {
+                cout << "\n[!] Nemas dostatek zlata!\n";
+            }
+        }
+        else if (volba == 5) {
+            cout << "\nBalis si veci a opoustis bezpeci vesnice...\n";
+            break;
+        }
+        else {
+            cout << "\n[!] Neplatna volba, zkus to znovu.\n";
+        }
+
+        if (uspesnyNakup) {
+            char chciNakupovat;
+            cout << "\nChces ve vesnici jeste neco nakoupit? (a/n): ";
+            cin >> chciNakupovat;
+            if (chciNakupovat == 'n' || chciNakupovat == 'N') {
+                cout << "\nOpoustis bezpeci vesnice a pokracujes v ceste...\n";
+                break;
+            }
+        }
+    }
+    pauza();
+}
+
+// SOUBOJOVY SYSTEM //
+bool bitva(int &hp, int &maxHP, int &mana, int &maxMana, int &attack, int &level, int &xp, int &gold, string className, vector<Monstrum> nepratele) {
+    int kolaSouboje = 0;
+    int chronarchPouziti = 0;
+
+    bool jeTuBoss = false;
+    for (size_t i = 0; i < nepratele.size(); i++) {
+        if (nepratele[i].jeMiniBoss || nepratele[i].jeHlavniBoss) {
+            jeTuBoss = true;
+        }
+    }
+
+    bool hracNaTahu = !jeTuBoss;
+
+    cout << "\n!!! SOUBOJ ZACINA !!!\n";
+    for (size_t i = 0; i < nepratele.size(); i++) {
+        cout << "Z krovi vyskocil: " << nepratele[i].jmeno << " (HP: " << nepratele[i].hp << ")\n";
+    }
+
+    while (hp > 0) {
+        bool vsichniMrtvi = true;
+        for (size_t i = 0; i < nepratele.size(); i++) {
+            if (nepratele[i].hp > 0) vsichniMrtvi = false;
+        }
+
+        if (vsichniMrtvi) {
+            cout << "\n[Vitezstvi] Vsechna monstra v tomto setkani jsou po smrti.\n";
+            return true;
+        }
+
+        if (hracNaTahu) {
+            kolaSouboje++;
+
+    // HLAVNI MECHANIKA BOSSE: CHRONARCH //
+            for (size_t i = 0; i < nepratele.size(); i++) {
+                if (nepratele[i].jeHlavniBoss && nepratele[i].hp > 0 && kolaSouboje % 5 == 0) {
+                    chronarchPouziti++;
+                    int noveHP = nepratele[i].maxHP - nepratele[i].hp - (10 * chronarchPouziti);
+                    if (noveHP < 0) noveHP = 0;
+
+                    cout << "\n>>> [SCHOPNOST CHRONARCHA] Casove smycky se prolinaji! <<<\n";
+                    cout << "Zivoty Chronarcha se pretocily z " << nepratele[i].hp << " HP na " << noveHP << " HP!\n";
+                    nepratele[i].hp = noveHP;
+                }
+            }
+
+            vsichniMrtvi = true;
+            for (size_t i = 0; i < nepratele.size(); i++) {
+                if (nepratele[i].hp > 0) vsichniMrtvi = false;
+            }
+            if (vsichniMrtvi) break;
+
+            cout << "\nTvoje HP: " << hp << "/" << maxHP << " | Mana: " << mana << "/" << maxMana << endl;
+            for (size_t i = 0; i < nepratele.size(); i++) {
+                if (nepratele[i].hp > 0) {
+                    cout << "  [" << i + 1 << "] " << nepratele[i].jmeno << " (HP: " << nepratele[i].hp << ")\n";
+                }
+            }
+
+            cout << "\nCo udelas?\n1 - Klasicky utok\n2 - Schopnost 1 (Stoji 2 many)\n3 - Schopnost 2 (Stoji 3 many)\n4 - Meditace (Obnovi 3 many, stoji tah)\nVolba: ";
+            int fightChoice;
+            cin >> fightChoice;
+
+            if (fightChoice == 1) {
+                int cil = 0;
+                if (nepratele.size() > 1) {
+                    cout << "Zadej cislo nepritele, na ktereho utocis: ";
+                    cin >> cil;
+                    cil--;
+                }
+                if (cil < 0 || cil >= (int)nepratele.size() || nepratele[cil].hp <= 0) {
+                    cout << "\n[!] Neplatny cil utoku!\n";
+                    kolaSouboje--;
+                    continue;
+                }
+
+                int damage = nahodneCislo(1, attack);
+                nepratele[cil].hp -= damage;
+                cout << "\n[*] Uderil jsi " << nepratele[cil].jmeno << " za " << damage << " poskozeni.\n";
+            }
+            else if (fightChoice == 2) {
+                if (mana >= 2) {
+                    mana -= 2;
+
+                    if (className == "Paladin") {
+                        hp += 4;
+                        if (hp > maxHP) hp = maxHP;
+                        cout << "\n[*] Paladin pouzil Leceni a obnovil si 4 zivoty.\n";
+                    }
+                    else if (className == "Mage") {
+                        hp += 3;
+                        if (hp > maxHP + 5) hp = maxHP + 5;
+                        cout << "\n[*] Mage vyvolal Magicky stit (+3 HP bariera).\n";
+                    }
+                    else if (className == "Lovec") {
+                        int cil = 0;
+                        if (nepratele.size() > 1) { cout << "Vyber cil pro jed: "; cin >> cil; cil--; }
+                        if (cil >= 0 && cil < (int)nepratele.size() && nepratele[cil].hp > 0) {
+                            nepratele[cil].hp -= 5;
+                            cout << "\n[*] Lovec vystrelil Jedovatou strelu do " << nepratele[cil].jmeno << " za 5 poskozeni.\n";
+                        }
+                    }
+                    else if (className == "Bezdomovec") {
+                        int cil = 0;
+                        if (nepratele.size() > 1) { cout << "Na koho budes zebrat?: "; cin >> cil; cil--; }
+                        if (cil >= 0 && cil < (int)nepratele.size() && nepratele[cil].hp > 0) {
+                            nepratele[cil].hp -= 5;
+                            cout << "\n[*] Bezdomovec zacal urputne zebrat. " << nepratele[cil].jmeno << " utrpel trapnosti 5 poskozeni.\n";
+                        }
+                    }
+                } else {
+                    cout << "\n[!] Nedostatek zdrojů!\n";
+                    kolaSouboje--;
+                    continue;
+                }
+            }
+            else if (fightChoice == 3) {
+                if (mana >= 3) {
+                    mana -= 3;
+
+                    if (className == "Paladin") {
+                        cout << "\n[*] Paladin pouzil Uder svetlem! Zablesk zasahl vsechny!\n";
+                        for (size_t i = 0; i < nepratele.size(); i++) {
+                            if (nepratele[i].hp > 0) {
+                                nepratele[i].hp -= 3;
+                                cout << "  -> " << nepratele[i].jmeno << " utrpel 3 plosne poskozeni.\n";
+                            }
+                        }
+                    }
+                    else if (className == "Mage") {
+                        int cil = 0;
+                        if (nepratele.size() > 1) { cout << "Vyber cil pro Fireball: "; cin >> cil; cil--; }
+                        if (cil < 0 || cil >= (int)nepratele.size() || nepratele[cil].hp <= 0) {
+                            cout << "\n[!] Neplatny cil! Kouzlo selhalo, mana vracena.\n"; mana += 3; kolaSouboje--; continue;
+                        }
+                        int specialDamage = nahodneCislo(6, 10);
+                        nepratele[cil].hp -= specialDamage;
+                        cout << "\n[*] Vystrelil jsi Fireball do " << nepratele[cil].jmeno << " za " << specialDamage << " zraneni!\n";
+                    }
+                    else if (className == "Lovec") {
+                        int cil = 0;
+                        if (nepratele.size() > 1) { cout << "Vyber cil pro omraceni: "; cin >> cil; cil--; }
+                        if (cil >= 0 && cil < (int)nepratele.size() && nepratele[cil].hp > 0) {
+                            int dmg = nahodneCislo(6, 9);
+                            nepratele[cil].hp -= dmg;
+                            cout << "\n[*] Lovec pouzil Pruraznou ranu na " << nepratele[cil].jmeno << " za " << dmg << " poskozeni.\n";
+                        }
+                    }
+                    else if (className == "Bezdomovec") {
+                        int cil = 0;
+                        if (nepratele.size() > 1) { cout << "Koho sokujes svacinou?: "; cin >> cil; cil--; }
+                        if (cil >= 0 && cil < (int)nepratele.size() && nepratele[cil].hp > 0) {
+                            nepratele[cil].hp -= 6;
+                            hp += 4;
+                            if (hp > maxHP) hp = maxHP;
+                            cout << "\n[*] Bezdomovec nasel v popelnici starou svacu! Sokoval tim " << nepratele[cil].jmeno << " za 6 poskozeni a sam ziskal silu (+4 HP).\n";
+                        }
+                    }
+                } else {
+                    cout << "\n[!] Nedostatek zdrojů!\n";
+                    kolaSouboje--;
+                    continue;
+                }
+            }
+            else if (fightChoice == 4) {
+                mana += 3;
+                if (mana > maxMana) mana = maxMana;
+                cout << "\n[*] Dal jsi si dvacet na lavicce a obnovil 3 many.\n";
+            }
+            else {
+                cout << "\n[!] Neplatna volba akce!\n";
+                kolaSouboje--;
+                continue;
+            }
+
+            for (size_t i = 0; i < nepratele.size(); i++) {
+                if (nepratele[i].hp <= 0 && nepratele[i].hp > -999) {
+                    cout << "\n>>> " << nepratele[i].jmeno << " padl k zemi! <<<\n";
+
+                    int ziskXp = nepratele[i].jeHlavniBoss ? 50 : (nepratele[i].jeMiniBoss ? 25 : 10);
+                    xp += ziskXp;
+                    cout << "Ziskavas: " << ziskXp << " XP.\n";
+
+                    if (nepratele[i].jeMiniBoss || nepratele[i].jeHlavniBoss || nahodneCislo(1, 2) == 1) {
+                        int foundGold = nepratele[i].jeHlavniBoss ? nahodneCislo(25, 50) : (nepratele[i].jeMiniBoss ? nahodneCislo(10, 20) : nahodneCislo(1, 10));
+                        gold += foundGold;
+                        cout << "Nasel jsi u nej " << foundGold << " zlata!\n";
+                    }
+
+                    if (xp >= 20) {
+                        level++;
+                        xp -= 20;
+                        maxHP += 5;
+                        hp = maxHP;
+                        mana = maxMana;
+                        attack += 2;
+                        cout << "\n==================================";
+                        cout << "\n      NOVY LEVEL POSTAVY (" << level << ")";
+                        cout << "\n==================================\n";
+                    }
+                    nepratele[i].hp = -999;
+                }
+            }
+            hracNaTahu = false;
+        }
+        else {
+            kolaSouboje++;
+            cout << "\n--- Tah nepratel na bojisti ---\n";
+            for (size_t i = 0; i < nepratele.size(); i++) {
+                if (nepratele[i].hp > 0) {
+
+                    if (nepratele[i].jeHlavniBoss && kolaSouboje % 5 == 0) {
+                        nepratele[i].chronarchPouziti++;
+                        int noveHP = nepratele[i].maxHP - nepratele[i].hp - (10 * nepratele[i].chronarchPouziti);
+                        if (noveHP < 0) noveHP = 0;
+                        cout << "\n>>> [SCHOPNOST CHRONARCHA] Cas se ohnul zpet! <<<\n";
+                        cout << "Zivoty bosse se meni z " << nepratele[i].hp << " HP na " << noveHP << " HP!\n";
+                        nepratele[i].hp = noveHP;
+                        if (nepratele[i].hp <= 0) continue;
+                    }
+
+                    hp -= nepratele[i].utok;
+                    cout << "  " << nepratele[i].jmeno << " utoci a zpusobil ti " << nepratele[i].utok << " poskozeni.\n";
+                    if (hp <= 0) return false;
+                }
+            }
+            hracNaTahu = true;
+        }
+    }
+    return false;
+}
+
+void potkejMoudrehoStroma(int &hp, int maxHP) {
+    int volba;
+    cout << "\n*Prichazis na osamocenou mitinu, kde stoji prastary strom.*\n";
+    cout << "Strom: \"Zdravim te, pocestny. Odvazujes se pomerit sily sve mysli se mnou, moudrym stromem?\"\n";
+    cout << "1 - Ano, prijimam hadanku\n2 - Ne, radsi odejdu\nVolba: ";
+    cin >> volba;
+
+    if (volba == 1) {
+        cout << "\n===> Moudry Strom klade hadanku <===\n";
+        cout << "Strom: \"Dobra tedy, ma hadanka zni: kazdy den na obloze se vznasi, radost nam prinasi a bubaky strasi. Co to je, pocestny?\"\n";
+        cout << "1 - Slunce\n2 - Hrnec\n3 - Mesic\nVolba: ";
+        cin >> volba;
+
+        if (volba == 1) {
+            cout << "\nStrom: \"Ha, koumak jsi koukam. No dobra, mou silou a magii ti navysuji zivoty o 2. Tak upaluj dal.\"\n";
+            hp += 2;
+            if (hp > maxHP) hp = maxHP;
+        } else {
+            cout << "\nStrom: \"Spatne! Tva mysl spi. Cit se oslaben! (-2 HP)\"\n";
+            hp -= 2;
+        }
+    }
+    pauza();
 }
 
 int main() {
-
     srand(time(0));
-
-// STATISTIKY HRACE //
 
     int hp, maxHP;
     int mana, maxMana;
     int attack;
-
     int gold = 10;
     int level = 1;
     int xp = 0;
 
     int vyber;
     int potvrzeni;
-
     string className;
 
-    cout << "----- TEXTOVE RPG -----\n";
-
-// VYBER POSTAVY //
+    vykresliCaru();
+    cout << "         CHRONARCHOVA CESTA: BITVA O CAS\n";
+    vykresliCaru();
+    cout << "\n Vydavas se na nebezpecnou vypravu s jedinym cilem:\n";
+    cout << " Projit nebezpecne kraje a zastavit Chronarcha.\n";
+    cout << " Zvol si svuj osud...\n";
+    vykresliCaru();
 
     while (true) {
-
-        cout << "\nVyber si postavu:\n";
-
+        cout << "\nVyber si svoji classu:\n";
         cout << "1 - Paladin\n";
         cout << "2 - Mage\n";
-
+        cout << "3 - Lovec\n";
+        cout << "4 - Bezdomovec\n";
         cout << "\nTvoje volba: ";
         cin >> vyber;
 
-// PALADIN //
-
         if (vyber == 1) {
-
-            className = "Paladin";
-
-            maxHP = 15;
-            hp = 15;
-
-            maxMana = 5;
-            mana = 5;
-
-            attack = 4;
-
-            cout << "\nPostava: Paladin\n";
+            className = "Paladin"; maxHP = 15; hp = 15; maxMana = 5; mana = 5; attack = 4;
+            cout << "\nZvolil jsi classu: Paladin (Leceni a plosne utoky)\n";
         }
-
-// MAGE //
-
         else if (vyber == 2) {
-
-            className = "Mage";
-
-            maxHP = 10;
-            hp = 10;
-
-            maxMana = 10;
-            mana = 10;
-
-            attack = 5;
-
-            cout << "\nPostava: Mage\n";
+            className = "Mage"; maxHP = 10; hp = 10; maxMana = 10; mana = 10; attack = 5;
+            cout << "\nZvolil jsi classu: Mage (Stity a silny Fireball)\n";
         }
-
-// SPATNA VOLBA //
-
+        else if (vyber == 3) {
+            className = "Lovec"; maxHP = 13; hp = 13; maxMana = 6; mana = 6; attack = 6;
+            cout << "\nZvolil jsi classu: Lovec (Vysoky utok, jed a ochromeni)\n";
+        }
+        else if (vyber == 4) {
+            className = "Bezdomovec"; maxHP = 16; hp = 16; maxMana = 6; mana = 6; attack = 4;
+            cout << "\nZvolil jsi classu: Bezdomovec (Zebrani a nalezeni svaciny)\n";
+        }
         else {
-
-            cout << "\nNeplatna volba!\n";
+            cout << "\nNeplatna volba tridy!\n";
             continue;
         }
 
-// VYPIS STATISTIK //
+        vypisStaty(hp, maxHP, mana, maxMana, attack, level, xp, gold, className);
 
-        vypisStaty(hp, maxHP, mana, maxMana,
-                    attack, level, xp, gold);
-
-        cout << "\nChces tuto postavu?\n";
-        cout << "1 = Ano\n";
-        cout << "0 = Ne\n";
-
+        cout << "\nChces trvale potvrdit vyber teto classy?\n";
+        cout << "1 = Ano, potvrdit\n";
+        cout << "0 = Ne, chci vybrat jinou\n";
         cout << "\nTvoje volba: ";
         cin >> potvrzeni;
 
@@ -136,294 +469,73 @@ int main() {
     cout << "\n-----------------------------";
     cout << "\n     POSTAVA POTVRZENA";
     cout << "\n-----------------------------\n";
+    pauza();
 
-// NAHODNE MONSTRUM //
+    Monstrum miniBoss1 = {string("Gorgona (Mini Boss)"), 30, 30, 5, true, false, 0};
+    Monstrum miniBoss2 = {string("Temny Rytir (Mini Boss)"), 35, 35, 6, true, false, 0};
+    Monstrum chronarch = {string("Chronarch"), 85, 85, 8, false, true, 0};
 
-    int monsterHP;
-    int monsterAttack;
+    navstivVesnici(hp, maxHP, mana, maxMana, attack, gold, "Zacinajici Pristav");
 
-    string monsterName;
-
-    int randomMonster = nahodneCislo(1, 7);
-
-    if (randomMonster == 1) {
-
-        monsterName = "Goblin";
-        monsterHP = 10;
-        monsterAttack = 2;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-    else if (randomMonster == 2) {
-
-        monsterName = "Skeleton";
-        monsterHP = 12;
-        monsterAttack = 3;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-    else if (randomMonster == 3) {
-
-        monsterName = "Orc";
-        monsterHP = 15;
-        monsterAttack = 4;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-    else if (randomMonster == 4) {
-
-        monsterName = "Zombie";
-        monsterHP = 14;
-        monsterAttack = 3;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {miniBoss1})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-    else if (randomMonster == 5) {
+    navstivVesnici(hp, maxHP, mana, maxMana, attack, gold, "Hluboky Hvozd");
 
-        monsterName = "Spider";
-        monsterHP = 8;
-        monsterAttack = 5;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-    else if (randomMonster == 6) {
-
-        monsterName = "Wolf";
-        monsterHP = 11;
-        monsterAttack = 4;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-// MINI BOSS //
-
-    else {
-
-        monsterName = "Dark Knight";
-        monsterHP = 25;
-        monsterAttack = 6;
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
     }
 
-// VYPIS MONSTRA //
-
-    vypisMonstrum(monsterName);
-
-// SOUBOJ //
-
-    while (hp > 0 && monsterHP > 0) {
-
-        cout << "\n-----------------------------";
-        cout << "\n           SOUBOJ";
-        cout << "\n-----------------------------\n";
-
-        cout << "\nTvoje zivoty: "
-             << hp
-             << "/"
-             << maxHP
-             << endl;
-
-        cout << "Tvoje mana: "
-             << mana
-             << "/"
-             << maxMana
-             << endl;
-
-        cout << monsterName
-             << " - zivoty: "
-             << monsterHP
-             << endl;
-
-        cout << "\n1 - Utok\n";
-        cout << "2 - Leceni\n";
-        cout << "3 - Specialni schopnost\n";
-
-        int fightChoice;
-
-        cout << "\nTvoje volba: ";
-        cin >> fightChoice;
-
-// NORMALNI UTOK //
-
-        if (fightChoice == 1) {
-
-            int damage = nahodneCislo(1, attack);
-
-            monsterHP = monsterHP - damage;
-
-            cout << "\nUderil jsi "
-                 << monsterName
-                 << " za "
-                 << damage
-                 << " poskozeni!\n";
-        }
-
-// LECENI //
-
-        else if (fightChoice == 2) {
-
-            if (mana >= 2) {
-
-                hp = hp + 4;
-
-                if (hp > maxHP) {
-                    hp = maxHP;
-                }
-
-                mana = mana - 2;
-
-                cout << "\nVylecil ses o 4 zivoty!\n";
-            }
-
-            else {
-
-                cout << "\nNemas dost many!\n";
-                continue;
-            }
-        }
-
-// SPECIALNI SCHOPNOST //
-
-        else if (fightChoice == 3) {
-
-            if (mana >= 3) {
-
-                int specialDamage;
-
-// PALADIN ABILITY //
-
-                if (className == "Paladin") {
-
-                    specialDamage = nahodneCislo(5, 8);
-
-                    cout << "\nPouzil jsi Svaty uder!\n";
-                }
-
-// MAGE ABILITY //
-
-                else {
-
-                    specialDamage = nahodneCislo(6, 10);
-
-                    cout << "\nPouzil jsi Fireball!\n";
-                }
-
-                mana = mana - 3;
-
-                monsterHP = monsterHP - specialDamage;
-
-                cout << "Zpusobil jsi "
-                     << specialDamage
-                     << " poskozeni!\n";
-            }
-
-            else {
-
-                cout << "\nNemas dost many!\n";
-                continue;
-            }
-        }
-
-// SPATNA VOLBA //
-
-        else {
-
-            cout << "\nNeplatna volba!\n";
-            continue;
-        }
-
-// SMRT MONSTRA //
-
-        if (monsterHP <= 0) {
-
-            cout << "\n-----------------------------";
-            cout << "\n      MONSTRUM PORAZENO";
-            cout << "\n-----------------------------\n";
-
-            cout << "\n"
-                 << monsterName
-                 << " byl porazen!\n";
-
-// XP ODMENA //
-
-            if (monsterName == "Dark Knight") {
-
-                xp = xp + 25;
-
-                cout << "\nZiskal jsi 25 XP!\n";
-            }
-
-            else {
-
-                xp = xp + 10;
-
-                cout << "\nZiskal jsi 10 XP!\n";
-            }
-
-// ZLATO ODMENA //
-
-            int foundGold;
-
-            if (monsterName == "Dark Knight") {
-
-                foundGold = nahodneCislo(10, 20);
-            }
-
-            else {
-
-                foundGold = nahodneCislo(1, 10);
-            }
-
-            gold = gold + foundGold;
-
-            cout << "Nasel jsi "
-                 << foundGold
-                 << " zlata!\n";
-
-// LEVEL SYSTEM //
-
-            if (xp >= 20) {
-
-                level = 2;
-
-                maxHP = maxHP + 5;
-                hp = maxHP;
-
-                attack = attack + 2;
-
-                cout << "\n-----------------------------";
-                cout << "\n         LEVEL UP";
-                cout << "\n-----------------------------\n";
-
-                cout << "\Dosahl jsi 2 levelu!\n";
-                cout << "Ziskal jsi vice zivotu a utoku!\n";
-            }
-
-// VYPIS ODMEN //
-
-            cout << "\nAktualni XP: "
-                 << xp
-                 << endl;
-
-            cout << "Aktualni zlato: "
-                 << gold
-                 << endl;
-
-            break;
-        }
-
-// TAH MONSTRA //
-
-        hp = hp - monsterAttack;
-
-        cout << "\n"
-             << monsterName
-             << " te uderil za "
-             << monsterAttack
-             << " poskozeni!\n";
-
-// SMRT HRACE //
-
-        if (hp <= 0) {
-
-            cout << "\n-----------------------------";
-            cout << "\n          KONEC HRY";
-            cout << "\n-----------------------------\n";
-
-            cout << "\nZemrel jsi!\n";
-        }
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {miniBoss2})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
+    }
+
+    navstivVesnici(hp, maxHP, mana, maxMana, attack, gold, "Hradni Podhradi");
+
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
+    }
+
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
+    }
+
+    potkejMoudrehoStroma(hp, maxHP);
+    if (hp <= 0) { cout << "\n[Prohra] Moudry strom te pripravil o posledni zivoty. Hra konci.\n"; return 0; }
+
+    if (!bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {generujBezneMonstrum(), generujBezneMonstrum(), generujBezneMonstrum()})) {
+        cout << "\n[Prohra] Vyprseli ti zivoty. Hra konci.\n"; return 0;
+    }
+
+    navstivVesnici(hp, maxHP, mana, maxMana, attack, gold, "Brana Casu");
+
+    if (bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {chronarch})) {
+        cout << "\n==================================================================\n";
+        cout << "  OZNAMENI: HRAC PORAZIL HLAVNIHO BOSSE CHRONARCHA A VYHRAL HRU!";
+        cout << "\n==================================================================\n";
+    } else {
+        cout << "\n[Prohra] Chronarch te vymazal z dejin. Hra konci.\n";
     }
 
     return 0;
