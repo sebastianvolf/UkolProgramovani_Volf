@@ -531,9 +531,9 @@ int main() {
     navstivVesnici(hp, maxHP, mana, maxMana, attack, gold, "Brana Casu");
 
     if (bitva(hp, maxHP, mana, maxMana, attack, level, xp, gold, className, {chronarch})) {
-        cout << "\n==================================================================\n";
+        cout << "\n=================================================================\n";
         cout << "  OZNAMENI: HRAC PORAZIL HLAVNIHO BOSSE CHRONARCHA A VYHRAL HRU!";
-        cout << "\n==================================================================\n";
+        cout << "\n=================================================================\n";
     } else {
         cout << "\n[Prohra] Chronarch te vymazal z dejin. Hra konci.\n";
     }
