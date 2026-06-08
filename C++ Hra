@@ -3,6 +3,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <utility>
 
 using namespace std;
 
@@ -188,16 +189,16 @@ bool bitva(string jmenoHrace, int &hp, int &maxHP, int &mana, int &maxMana, int 
         if (hracNaTahu) {
             kolaSouboje++;
 
-// HLAVNI MECHANIKA BOSSE: CHRONARCH //
             for (size_t i = 0; i < nepratele.size(); i++) {
                 if (nepratele[i].jeHlavniBoss && nepratele[i].hp > 0 && kolaSouboje % 5 == 0) {
                     nepratele[i].chronarchPouziti++;
 
-                    int noveHP = nepratele[i].hp + 30;
+                    int leceni = 25 + kolaSouboje;
+                    int noveHP = nepratele[i].hp + leceni;
                     if (noveHP > nepratele[i].maxHP) noveHP = nepratele[i].maxHP;
 
                     cout << "\n>>> [SCHOPNOST CHRONARCHA] Casove smycky se prolinaji! <<<\n";
-                    cout << "Zivoty Chronarcha se pretocily z " << nepratele[i].hp << " HP na " << noveHP << " HP!\n";
+                    cout << "Zivoty Chronarcha se pretocily z " << nepratele[i].hp << " HP na " << noveHP << " HP! (+ " << leceni << " HP)\n";
                     nepratele[i].hp = noveHP;
                 }
             }
@@ -232,7 +233,7 @@ bool bitva(string jmenoHrace, int &hp, int &maxHP, int &mana, int &maxMana, int 
                     continue;
                 }
 
-                int damage = nahodneCislo(max(1, attack / 2), attack);
+                int damage = nahodneCislo(max(1, attack / 3), attack);
                 nepratele[cil].hp -= damage;
                 cout << "\n[*] Uderil jsi " << nepratele[cil].jmeno4Pad << " za " << damage << " poskozeni.\n";
             }
@@ -308,7 +309,7 @@ bool bitva(string jmenoHrace, int &hp, int &maxHP, int &mana, int &maxMana, int 
                         int cil = 0;
                         if (nepratele.size() > 1) { cout << "Koho sokujes svacinou?: "; cin >> cil; cil--; }
                         if (cil >= 0 && cil < (int)nepratele.size() && nepratele[cil].hp > 0) {
-                            int damageSvacina = 5 + (attack / 2);
+                            int damageSvacina = 6 + (attack / 3);
                             nepratele[cil].hp -= damageSvacina;
                             hp += 4;
                             if (hp > maxHP) hp = maxHP;
@@ -409,8 +410,8 @@ void potkejMoudrehoStroma(int &hp, int maxHP) {
             hp += 2;
             if (hp > maxHP) hp = maxHP;
         } else {
-            cout << "\nStrom: \"Spatne! Tva mysl spi. Cit se oslaben! (-1 HP)\"\n";
-            hp -= 10;
+            cout << "\nStrom: \"Spatne! Tva mysl spi. Cit se oslaben! (-2 HP)\"\n";
+            hp -= 2;
         }
     }
     pauza();
@@ -493,7 +494,8 @@ int main() {
 
     Monstrum miniBoss1 = {string("Gorgona (Mini Boss)"), string("Gorgonu (Mini Boss)"), 30, 30, 5, true, false, 0, true};
     Monstrum miniBoss2 = {string("Temny Rytir (Mini Boss)"), string("Temneho Rytire (Mini Boss)"), 35, 35, 6, true, false, 0, false};
-    Monstrum chronarch = {string("Chronarch"), string("Chronarcha"), 150, 150, 8, false, true, 0, false};
+
+    Monstrum chronarch = {string("Chronarch"), string("Chronarcha"), 220, 220, 11, false, true, 0, false};
 
     navstivVesnici(jmenoHrace, hp, maxHP, mana, maxMana, attack, gold, "Zacinajici Pristav");
 
